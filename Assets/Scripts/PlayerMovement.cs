@@ -20,9 +20,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("======| Components Reference |======")]
     [SerializeField] private PlayerState _playerState;
-    [SerializeField] private Animator _animator;
 
-    private int _layerIndex;
     private bool _isMovementInputActive;
     private bool _isRunInputHeld;
     private PlayerState.PlayerStateEnum _lastState;
@@ -33,7 +31,6 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         _playerState = GetComponent<PlayerState>();
-        _layerIndex = _animator.GetLayerIndex("Top Layer");
 
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
@@ -92,87 +89,22 @@ public class PlayerMovement : MonoBehaviour
         switch (currentState)
         {
             case PlayerState.PlayerStateEnum.IDLE:
-                SetAnimatorIdle();
                 break;
 
             case PlayerState.PlayerStateEnum.WALK:
-                SetAnimatorWalk();
                 Move(_walkSpeed);
                 break;
 
             case PlayerState.PlayerStateEnum.RUN:
-                SetAnimatorRun();
                 Move(_runSpeed);
                 break;
 
             case PlayerState.PlayerStateEnum.LIGHTATTACK:
-                if (stateChanged)
-                {
-                    SetAnimatorAction();
-                }
                 break;
 
             case PlayerState.PlayerStateEnum.HEAVYATTACK:
-                if (stateChanged)
-                {
-                    SetAnimatorAction();
-                }
                 break;
         }
-    }
-
-    private void SetAnimatorIdle()
-    {
-        _animator.SetLayerWeight(_layerIndex, 1);
-        _animator.SetFloat("Speed", 0f);
-        _animator.SetFloat("MoveX", 0f);
-        _animator.SetFloat("MoveY", 0f);
-    }
-
-    private void SetAnimatorWalk()
-    {
-        _animator.SetLayerWeight(_layerIndex, 1);
-        _animator.SetFloat("Speed", _walkSpeed);
-        UpdateBlendTreeDirection();
-    }
-
-    private void SetAnimatorRun()
-    {
-        _animator.SetLayerWeight(_layerIndex, 1);
-        _animator.SetFloat("Speed", _runSpeed);
-        UpdateBlendTreeDirection();
-    }
-
-    private void UpdateBlendTreeDirection()
-    {
-        // Récupérer l'input brut
-        Vector2 moveInput = _moveActionReference.action.ReadValue<Vector2>();
-
-        if (moveInput == Vector2.zero)
-            return;
-
-        // Convertir l'input en direction relative à la caméra
-        Vector3 camForward = Camera.main.transform.forward;
-        Vector3 camRight = Camera.main.transform.right;
-        camForward.y = 0f;
-        camRight.y = 0f;
-        camForward.Normalize();
-        camRight.Normalize();
-
-        Vector3 moveDirection = camForward * moveInput.y + camRight * moveInput.x;
-        moveDirection.Normalize();
-
-        // Convertir la direction mondiale en direction locale du personnage
-        Vector3 localDirection = transform.InverseTransformDirection(moveDirection);
-
-        // Envoyer à l'Animator (X = gauche/droite, Y = avant/arrière dans l'espace local)
-        _animator.SetFloat("MoveX", localDirection.x);
-        _animator.SetFloat("MoveY", localDirection.z);
-    }
-
-    private void SetAnimatorAction()
-    {
-        _animator.SetLayerWeight(_layerIndex, 0);
     }
 
     private void Move(int speed)
