@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e2bf45cbe56f8341b9e28d4e062a763, type: 3}
+  m_Name: FloorType 1
+  m_EditorClassIdentifier: 
+  _seed: 0
+  _isRandomSeed: 0
+  _roomPools:
+  - _type: 0
+    _rooms:
+    - {fileID: 11400000, guid: 74f4b3ffff629ba4983c59b35b134b41, type: 2}
+  - _type: 1
+    _rooms:
+    - {fileID: 11400000, guid: 876d9214030006247a1f59c455d9deb3, type: 2}
+  - _type: 2
+    _rooms:
+    - {fileID: 11400000, guid: d83a37e0c488bd64fa70a6997a9dcb52, type: 2}
+  - _type: 3
+    _rooms:
+    - {fileID: 11400000, guid: fb0a2b44a941bf44082d0f9b97c86c9a, type: 2}
+  - _type: 4
+    _rooms:
+    - {fileID: 11400000, guid: e031ef5f0cd484f4d8d2f6939d02a73e, type: 2}
+  - _type: 5
+    _rooms:
+    - {fileID: 11400000, guid: f0771c49b11d0044faf7c315c1f267ac, type: 2}
