@@ -15,15 +15,22 @@ public class DungeonGraph : MonoBehaviour
     [SerializeField] private SerializableDictionary<RoomType, Vector2> _maxLinkByRoomType = new();
     private Dictionary<RoomType, List<DungeonGraphNode>> _roomByType = new();
     private DungeonGraphNode _startNode = null;
+    private DungeonInstantiator _dungeonInstantiator;
 
     public List<DungeonGraphNode> Nodes => _nodes;
     public SODungeon ActualDungeonTemplate => _actualDungeonTemplate;
+
+    private void Awake()
+    {
+        _dungeonInstantiator = GetComponent<DungeonInstantiator>();
+    }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         _actualDungeonTemplate = _dungeonTemplate[_floor / 10];
         GraphCreationLoop();
+        _dungeonInstantiator.SetupInstantation();
     }
 
     private void ChangeFloor()
@@ -37,6 +44,7 @@ public class DungeonGraph : MonoBehaviour
             Destroy(child.gameObject);
         }
         GraphCreationLoop();
+        _dungeonInstantiator.SetupInstantation();
     }
 
     private void GraphCreationLoop()
@@ -45,6 +53,8 @@ public class DungeonGraph : MonoBehaviour
         _possibleRoomType = _actualDungeonTemplate.GetAllType();
         do
         {
+            DebugGraph();
+            Debug.Log("\n\n\n\n\n.............................\n\n\n\n\n");
             _nodes.Clear();
             _dfsVisitedNode.Clear();
             _roomByType.Clear();
@@ -55,10 +65,11 @@ public class DungeonGraph : MonoBehaviour
 
             AddEndNode(nodeByDistance);
 
-            //DebugGraph();
-            DebugDistance();
+            
+            //DebugDistance();
 
         } while (!DFS(_startNode, _dfsVisitedNode));
+        DebugGraph();
     }
 
     private void AddEndNode(Dictionary<int, List<DungeonGraphNode>> nodeByDistance)

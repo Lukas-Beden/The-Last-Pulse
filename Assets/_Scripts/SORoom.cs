@@ -1,7 +1,7 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NewRoomTemplate", menuName = "DungeonGeneration/RoomTemplate")]
-public class RoomTemplate : ScriptableObject
+[CreateAssetMenu(fileName = "NewSORoom", menuName = "DungeonGeneration/SORoom")]
+public class SORoom : ScriptableObject
 {
     [SerializeField] private GameObject _roomPrefabs;
     [SerializeField] private Vector2 _roomSize;

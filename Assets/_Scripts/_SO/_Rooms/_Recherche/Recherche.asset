@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b6ca71d715f0d1849af9aad0aad8eff1, type: 3}
+  m_Script: {fileID: 11500000, guid: ea0b614bfa7ac0d439368e6bfe118fcd, type: 3}
   m_Name: Recherche
   m_EditorClassIdentifier: 
   _roomPrefabs: {fileID: 3617510080137543302, guid: a08e7524b297bf04487ab48dc271d452, type: 3}
-  _roomSize: {x: 0, y: 0}
+  _roomSize: {x: 1, y: 1}

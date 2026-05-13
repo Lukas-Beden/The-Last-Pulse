@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NewDungeonTemplate", menuName = "DungeonGeneration/DungeonTemplate")]
+[CreateAssetMenu(fileName = "NewSODungeon", menuName = "DungeonGeneration/SODungeon")]
 public class SODungeon : ScriptableObject
 {
     [SerializeField] private int _seed = 0;
@@ -17,7 +17,7 @@ public class SODungeon : ScriptableObject
 
 
 
-    public List<RoomTemplate> GetRoomsOfType(RoomType type)
+    public List<SORoom> GetRoomsOfType(RoomType type)
     {
         foreach (var pool in _roomPools)
         {
@@ -26,7 +26,7 @@ public class SODungeon : ScriptableObject
                 return pool.Rooms;
             } 
         } 
-        return new List<RoomTemplate>();
+        return new List<SORoom>();
     }
 
     public List<RoomType> GetAllType()
@@ -44,8 +44,8 @@ public class SODungeon : ScriptableObject
 public class RoomTypePool
 {
     [SerializeField] private RoomType _type;
-    [SerializeField] private List<RoomTemplate> _rooms = new List<RoomTemplate>();
+    [SerializeField] private List<SORoom> _rooms = new List<SORoom>();
 
     public RoomType Type => _type;
-    public List<RoomTemplate> Rooms => _rooms;
+    public List<SORoom> Rooms => _rooms;
 }

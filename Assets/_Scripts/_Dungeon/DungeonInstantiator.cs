@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class DungeonInstantiator : MonoBehaviour
@@ -11,10 +12,16 @@ public class DungeonInstantiator : MonoBehaviour
     private List<DungeonGraphNode> _graphNodes = new();
     private DungeonGraphNode[,] _nodeGrid;
     private int _nodeCount = 0;
+    int ratioSize = 20;
 
 
-    
+
     void Start()
+    {
+        
+    }
+
+    public void SetupInstantation()
     {
         _graph = gameObject.GetComponent<DungeonGraph>();
         _actualDungeonTemplate = _graph.ActualDungeonTemplate;
@@ -29,13 +36,28 @@ public class DungeonInstantiator : MonoBehaviour
             isFinished = CreateGrid(_graphNodes[0]);
             iteration += 1;
         } while (!isFinished && iteration < 50);
-        
-        //InstantiateRoom();
+        //Debug.Log(iteration);
+        InstantiateRoom();
     }
 
     private void InstantiateRoom()
     {
-        throw new NotImplementedException();
+        //Debug.Log("InstantiateRoom called, node count: " + _graphNodes.Count);
+        foreach (DungeonGraphNode node in _graphNodes)
+        {
+            //Debug.Log("Instantiating: " + node.RoomType + " at " + node.Coordinate);
+            //Debug.Log(node);
+            SORoom newRoom = GetRandomRoom(node);
+            GameObject roomGO = Instantiate(newRoom.RoomPrefab, new Vector3(node.Coordinate.x * ratioSize, 0, node.Coordinate.z * ratioSize), Quaternion.identity, transform);
+            node.SetRoom(roomGO);
+        }
+    }
+
+    private SORoom GetRandomRoom(DungeonGraphNode node)
+    {
+        List<SORoom> roomOfType = _actualDungeonTemplate.GetRoomsOfType(node.RoomType);
+        SORoom rooom = roomOfType[UnityEngine.Random.Range(0, roomOfType.Count)];
+        return rooom;
     }
 
     private bool CreateGrid(DungeonGraphNode startNode)
@@ -51,6 +73,7 @@ public class DungeonInstantiator : MonoBehaviour
         visitedNodes.Add(startNode);
 
         _nodeGrid[startPos.x, startPos.y] = startNode;
+        startNode.ChangeCoordinate(new Vector3Int(startPos.x, 0, startPos.y));
         posByNode[startNode] = startPos;
         usedPos.Add(startPos);
 
@@ -73,6 +96,7 @@ public class DungeonInstantiator : MonoBehaviour
                     newPos.y >= 0 && newPos.y < _nodeCount)
                 {
                     _nodeGrid[newPos.x, newPos.y] = neighbour;
+                    neighbour.ChangeCoordinate(new Vector3Int(newPos.x, 0, newPos.y));
                     posByNode[neighbour] = newPos;
                     usedPos.Add(newPos);
 
