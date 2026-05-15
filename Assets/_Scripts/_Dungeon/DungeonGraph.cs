@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -16,9 +16,13 @@ public class DungeonGraph : MonoBehaviour
     private Dictionary<RoomType, List<DungeonGraphNode>> _roomByType = new();
     private DungeonGraphNode _startNode = null;
     private DungeonInstantiator _dungeonInstantiator;
+    private int _ratioSize = 20;
+    private int _realSize = 12;
 
     public List<DungeonGraphNode> Nodes => _nodes;
     public SODungeon ActualDungeonTemplate => _actualDungeonTemplate;
+    public int RatioSize => _ratioSize;
+    public int RealSize => _realSize;
 
     private void Awake()
     {
@@ -28,6 +32,8 @@ public class DungeonGraph : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        Debug.Log("DungeonGraph Start called"); // doit apparaître
+        Debug.Log("Template count: " + _dungeonTemplate.Count);
         _actualDungeonTemplate = _dungeonTemplate[_floor / 10];
         GraphCreationLoop();
         _dungeonInstantiator.SetupInstantation();
@@ -47,10 +53,12 @@ public class DungeonGraph : MonoBehaviour
         _dungeonInstantiator.SetupInstantation();
     }
 
-    private void GraphCreationLoop()
+    public void GraphCreationLoop()
     {
         List<DungeonGraphNode> _dfsVisitedNode = new();
         _possibleRoomType = _actualDungeonTemplate.GetAllType();
+        _possibleRoomType.Remove(RoomType.Start);
+        _possibleRoomType.Remove(RoomType.End);
         do
         {
             DebugGraph();
@@ -74,22 +82,33 @@ public class DungeonGraph : MonoBehaviour
 
     private void AddEndNode(Dictionary<int, List<DungeonGraphNode>> nodeByDistance)
     {
-        List<DungeonGraphNode> farestNodes = nodeByDistance[nodeByDistance.Keys.Max()];
-
+        int distance = nodeByDistance.Keys.Max();
+        List<DungeonGraphNode> farestNodes = nodeByDistance[distance];
         List<DungeonGraphNode> usableNodes = new();
-
-        foreach (DungeonGraphNode node in farestNodes)
+        
+        do
         {
-            if (_roomConstraints[RoomType.End].Contains(node.RoomType))
+            if (distance < 0)
             {
-                usableNodes.Add(node);
+                Debug.LogError("AddEndNode: aucun nœud valide trouvé pour End, on recrée le graphe.");
+                return; // la boucle do...while dans GraphCreationLoop va réessayer
             }
-        }
-
-        if (usableNodes.Count < 2)
-        {
-            return;
-        }
+            usableNodes.Clear();
+            foreach (DungeonGraphNode node in farestNodes)
+            {
+                if (_roomConstraints[RoomType.End].Contains(node.RoomType) && node.Neighbour.Count < _maxLinkByRoomType[node.RoomType].y)
+                {
+                    usableNodes.Add(node);
+                }
+            }
+            distance -= 1;
+            if (distance < 0 || !nodeByDistance.ContainsKey(distance))
+            {
+                Debug.LogError("AddEndNode: impossible de placer le End node.");
+                return;
+            }
+            farestNodes = nodeByDistance[distance];
+        } while (usableNodes.Count < 2);
 
         DungeonGraphNode newNode = new DungeonGraphNode(RoomType.End);
         _nodes.Add(newNode);
@@ -105,6 +124,7 @@ public class DungeonGraph : MonoBehaviour
 
     private void CreateDungeon()
     {
+        Debug.Log("CreateDungeon start");
         DungeonGraphNode newNode = new DungeonGraphNode(RoomType.Start);
         List<DungeonGraphNode> newList = new List<DungeonGraphNode>();
 
@@ -116,11 +136,13 @@ public class DungeonGraph : MonoBehaviour
         newList.Clear();
 
         CreateBaseNode();
-
+        Debug.Log("CreateBaseNode done, node count: " + _nodes.Count);
         foreach (DungeonGraphNode node in _nodes)
         {
+            Debug.Log("AddNeighbour for: " + node.RoomType);
             AddNeighbour(node);
         }
+        Debug.Log("CreateDungeon end");
     }
 
     private void CreateBaseNode()
@@ -140,47 +162,52 @@ public class DungeonGraph : MonoBehaviour
 
     private void AddNeighbour(DungeonGraphNode node)
     {
-        RoomType roomType = node.RoomType;
-
-        List<RoomType> usableRoomType = new();
-
-        foreach (RoomType nextRoomType in _roomConstraints[roomType])
+        if (!_roomConstraints.ContainsKey(node.RoomType))
         {
-            if (_roomByType[nextRoomType].Count > 0)
-            {
-                usableRoomType.Add(nextRoomType);
-            }
+            Debug.LogError("MISSING KEY in _roomConstraints: " + node.RoomType);
+            return;
         }
-
-        if (usableRoomType.Count <= 0)
+        if (!_maxLinkByRoomType.ContainsKey(node.RoomType))
         {
+            Debug.LogError("MISSING KEY in _maxLinkByRoomType: " + node.RoomType);
             return;
         }
 
-        RoomType newTypeLink = usableRoomType[UnityEngine.Random.Range(0, usableRoomType.Count)];
+        RoomType roomType = node.RoomType;
 
-        DungeonGraphNode newNodeLink = _roomByType[newTypeLink][UnityEngine.Random.Range(0, _roomByType[newTypeLink].Count)];
-
-        if (IsNodeNotInNeighbour(node, newNodeLink))
+        // Candidats valides : bon type, pas déjà voisin, pas soi-même, pas au max
+        List<DungeonGraphNode> candidates = new();
+        foreach (RoomType nextRoomType in _roomConstraints[roomType])
         {
-            node.AddNeighbour(newNodeLink);
-            newNodeLink.AddNeighbour(node);
+            if (!_roomByType.ContainsKey(nextRoomType)) continue;
+            foreach (DungeonGraphNode candidate in _roomByType[nextRoomType])
+            {
+                if (candidate == node) continue;
+                if (!IsNodeNotInNeighbour(node, candidate)) continue;
+                if (candidate.Neighbour.Count >= _maxLinkByRoomType[nextRoomType].y) continue;
+                candidates.Add(candidate);
+            }
         }
 
+        if (candidates.Count == 0) return;
+        if (node.Neighbour.Count >= _maxLinkByRoomType[roomType].y) return;
+
+        DungeonGraphNode newNodeLink = candidates[UnityEngine.Random.Range(0, candidates.Count)];
+        RoomType newTypeLink = newNodeLink.RoomType;
+
+        node.AddNeighbour(newNodeLink);
+        newNodeLink.AddNeighbour(node);
+
+        // Retirer des disponibles si max atteint
         if (node.Neighbour.Count >= _maxLinkByRoomType[roomType].y)
-        {
             _roomByType[roomType].Remove(node);
-        }
 
         if (newNodeLink.Neighbour.Count >= _maxLinkByRoomType[newTypeLink].y)
-        {
             _roomByType[newTypeLink].Remove(newNodeLink);
-        }
 
+        // Rappel récursif si min non atteint
         if (node.Neighbour.Count < _maxLinkByRoomType[roomType].x)
-        {
             AddNeighbour(node);
-        }
     }
 
     private bool IsNodeNotInNeighbour(DungeonGraphNode mainNode, DungeonGraphNode potentialNeighbour)
@@ -268,16 +295,33 @@ public class DungeonGraph : MonoBehaviour
 
     private void DebugGraph()
     {
+        // Assigner un ID unique à chaque node pour ce debug
+        Dictionary<DungeonGraphNode, int> nodeIds = new();
+        for (int i = 0; i < _nodes.Count; i++)
+        {
+            nodeIds[_nodes[i]] = i;
+        }
+
+        System.Text.StringBuilder sb = new();
+        sb.AppendLine("========== GRAPH DEBUG ==========");
         foreach (DungeonGraphNode node in _nodes)
         {
-            Debug.Log(node.RoomType.ToString());
-            Debug.Log("****");
-            foreach (DungeonGraphNode neighbour in node.Neighbour)
+            int id = nodeIds[node];
+            sb.AppendLine($"[{id}] {node.RoomType}");
+            if (node.Neighbour.Count == 0)
             {
-                Debug.Log(neighbour.RoomType.ToString());
+                sb.AppendLine("    └─ (aucun voisin)");
             }
-            Debug.Log("\n------------------------------------\n");
+            else
+            {
+                foreach (DungeonGraphNode neighbour in node.Neighbour)
+                {
+                    sb.AppendLine($"    └─ [{nodeIds[neighbour]}] {neighbour.RoomType}");
+                }
+            }
         }
+        sb.AppendLine("=================================");
+        Debug.Log(sb.ToString());
     }
 
     private void DebugDistance()

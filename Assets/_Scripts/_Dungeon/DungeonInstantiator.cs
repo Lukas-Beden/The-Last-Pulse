@@ -12,18 +12,27 @@ public class DungeonInstantiator : MonoBehaviour
     private List<DungeonGraphNode> _graphNodes = new();
     private DungeonGraphNode[,] _nodeGrid;
     private int _nodeCount = 0;
-    int ratioSize = 20;
+    private int _ratioSize;
+    //private Dictionary<int, List<DungeonGraphNode>> _finishedNodes = new();
 
 
 
-    void Start()
+    private CorridorBuilder _corridorBuilder;
+
+    void Awake()
     {
-        
+        _corridorBuilder = GetComponent<CorridorBuilder>();
+        _graph = gameObject.GetComponent<DungeonGraph>();
+        _ratioSize = _graph.RatioSize;
+    }
+
+    private void SetupDoors(DoorsManager doorsManager, DoorDirection direction)
+    {
+        doorsManager.SetOpen(direction);
     }
 
     public void SetupInstantation()
     {
-        _graph = gameObject.GetComponent<DungeonGraph>();
         _actualDungeonTemplate = _graph.ActualDungeonTemplate;
         _graphNodes = _graph.Nodes;
         _nodeCount = _graphNodes.Count;
@@ -36,20 +45,51 @@ public class DungeonInstantiator : MonoBehaviour
             isFinished = CreateGrid(_graphNodes[0]);
             iteration += 1;
         } while (!isFinished && iteration < 50);
-        //Debug.Log(iteration);
         InstantiateRoom();
+        foreach (DungeonGraphNode node in _graphNodes)
+        {
+            _corridorBuilder.AddNode(node);
+        }
+        LESCOULOIRS();
+        //_corridorBuilder.DebugUsedPos();
+    }
+
+    private void LESCOULOIRS() //verif ne fonctionne pas V1
+    {
+        foreach (DungeonGraphNode node in _graphNodes)
+        {
+            foreach (var kvp in node.NeighbourPerDirection)
+            {
+                if (!node.IsConnectionFinished(kvp.Key))
+                {
+                    node.AddFinishedCorridors(kvp.Key);
+                    kvp.Key.AddFinishedCorridors(node);
+                    if (!_corridorBuilder.CorridorSetup(node, kvp.Key))
+                    {
+                        _graph.GraphCreationLoop();
+                        Debug.Log("resteartree");
+                    }
+                }
+            }
+        }
     }
 
     private void InstantiateRoom()
     {
-        //Debug.Log("InstantiateRoom called, node count: " + _graphNodes.Count);
         foreach (DungeonGraphNode node in _graphNodes)
         {
-            //Debug.Log("Instantiating: " + node.RoomType + " at " + node.Coordinate);
-            //Debug.Log(node);
             SORoom newRoom = GetRandomRoom(node);
-            GameObject roomGO = Instantiate(newRoom.RoomPrefab, new Vector3(node.Coordinate.x * ratioSize, 0, node.Coordinate.z * ratioSize), Quaternion.identity, transform);
+            GameObject roomGO = Instantiate(newRoom.RoomPrefab, new Vector3(node.Coordinate.x * _ratioSize, 0, node.Coordinate.z * _ratioSize), Quaternion.identity, transform);
+            DoorsManager doorsManager = roomGO.GetComponent<DoorsManager>();
+            foreach (var kvp in doorsManager.DoorsPerDirection)
+            {
+                doorsManager.SetClose(kvp.Key);
+            }
             node.SetRoom(roomGO);
+            foreach (var kvp in node.NeighbourPerDirection)
+            {
+                SetupDoors(doorsManager, kvp.Value);
+            }
         }
     }
 
@@ -92,23 +132,75 @@ public class DungeonInstantiator : MonoBehaviour
                 (Vector2Int, DoorDirection) result = FindEmptyCell(parentPos, usedPos);
                 Vector2Int newPos = result.Item1;
 
-                if (newPos.x >= 0 && newPos.x < _nodeCount &&
-                    newPos.y >= 0 && newPos.y < _nodeCount)
-                {
-                    _nodeGrid[newPos.x, newPos.y] = neighbour;
-                    neighbour.ChangeCoordinate(new Vector3Int(newPos.x, 0, newPos.y));
-                    posByNode[neighbour] = newPos;
-                    usedPos.Add(newPos);
-
-                    actualNode.AddNeighbourPerDirection(neighbour, result.Item2);
-                    neighbour.AddNeighbourPerDirection(actualNode, OppositeDirection(result.Item2));
-                } else
-                {
+                if (newPos.x < 0 || newPos.x >= _nodeCount ||
+                    newPos.y < 0 || newPos.y >= _nodeCount)
                     return false;
+
+                _nodeGrid[newPos.x, newPos.y] = neighbour;
+                neighbour.ChangeCoordinate(new Vector3Int(newPos.x, 0, newPos.y));
+                posByNode[neighbour] = newPos;
+                usedPos.Add(newPos);
+
+                actualNode.AddNeighbourPerDirection(neighbour, result.Item2);
+                neighbour.AddNeighbourPerDirection(actualNode, OppositeDirection(result.Item2));
+            }
+        }
+
+        foreach (DungeonGraphNode node in _graphNodes)
+        {
+            foreach (DungeonGraphNode neighbour in node.Neighbour)
+            {
+                if (node.NeighbourPerDirection.ContainsKey(neighbour)) continue;
+
+                Vector3Int delta = neighbour.Coordinate - node.Coordinate;
+
+                DoorDirection dir = GetDominantDirection(delta);
+                if (dir == DoorDirection.None) return false;
+
+                DoorDirection opposite = OppositeDirection(dir);
+
+                if (!node.NeighbourPerDirection.ContainsValue(dir) &&
+                    !neighbour.NeighbourPerDirection.ContainsValue(opposite))
+                {
+                    node.AddNeighbourPerDirection(neighbour, dir);
+                    neighbour.AddNeighbourPerDirection(node, opposite);
+                }
+                else
+                {
+                    DoorDirection altDir = FindFreeDirectionPair(node, neighbour);
+                    if (altDir == DoorDirection.None) return false;
+
+                    node.AddNeighbourPerDirection(neighbour, altDir);
+                    neighbour.AddNeighbourPerDirection(node, OppositeDirection(altDir));
                 }
             }
         }
+
         return true;
+    }
+
+    private DoorDirection GetDominantDirection(Vector3Int delta)
+    {
+        if (delta == Vector3Int.zero) return DoorDirection.None;
+
+        if (Mathf.Abs(delta.x) >= Mathf.Abs(delta.z))
+            return delta.x > 0 ? DoorDirection.East : DoorDirection.West;
+        else
+            return delta.z > 0 ? DoorDirection.North : DoorDirection.South;
+    }
+
+    private DoorDirection FindFreeDirectionPair(DungeonGraphNode a, DungeonGraphNode b)
+    {
+        DoorDirection[] dirs = { DoorDirection.North, DoorDirection.East, DoorDirection.South, DoorDirection.West };
+
+        foreach (DoorDirection dir in dirs)
+        {
+            DoorDirection opp = OppositeDirection(dir);
+            if (!a.NeighbourPerDirection.ContainsValue(dir) &&
+                !b.NeighbourPerDirection.ContainsValue(opp))
+                return dir;
+        }
+        return DoorDirection.None;
     }
 
     private void ClearAllNodes()
@@ -121,18 +213,14 @@ public class DungeonInstantiator : MonoBehaviour
 
     private DoorDirection OppositeDirection(DoorDirection direction)
     {
-        switch (direction)
+        return direction switch
         {
-            case DoorDirection.North:
-                return DoorDirection.South;
-            case DoorDirection.East:
-                return DoorDirection.West;
-            case DoorDirection.South:
-                return DoorDirection.North;
-            case DoorDirection.West:
-                return DoorDirection.East;
-        }
-        return DoorDirection.North;
+            DoorDirection.North => DoorDirection.South,
+            DoorDirection.East => DoorDirection.West,
+            DoorDirection.South => DoorDirection.North,
+            DoorDirection.West => DoorDirection.East,
+            _ => DoorDirection.None
+        };
     }
 
     private (Vector2Int, DoorDirection) FindEmptyCell(Vector2Int origin, List<Vector2Int> usedPos)
@@ -172,7 +260,6 @@ public class DungeonInstantiator : MonoBehaviour
         }
         return (vectorDir, newDir);
     }
-
 
     // Update is called once per frame
     void Update()

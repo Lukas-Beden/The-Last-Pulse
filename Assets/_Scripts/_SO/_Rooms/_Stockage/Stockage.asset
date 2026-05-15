@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea0b614bfa7ac0d439368e6bfe118fcd, type: 3}
   m_Name: Stockage
   m_EditorClassIdentifier: 
-  _roomPrefabs: {fileID: 7124721406527079637, guid: 4cd860257cee11b408a0d382a6a3f56c, type: 3}
+  _roomPrefabs: {fileID: 7124721406527079637, guid: f9b6df4c74e46ce4b99dd6514d2b5ce8, type: 3}
   _roomSize: {x: 1, y: 1}

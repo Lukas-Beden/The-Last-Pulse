@@ -130,6 +130,7 @@ GameObject:
   - component: {fileID: 1142923760}
   - component: {fileID: 1142923761}
   - component: {fileID: 1142923762}
+  - component: {fileID: 1142923763}
   m_Layer: 0
   m_Name: DungeonMaker
   m_TagString: Untagged
@@ -146,7 +147,7 @@ Transform:
   m_GameObject: {fileID: 1142923759}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.58486, y: -3.78421, z: 1.76637}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -206,6 +207,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff61b77dca5bdd341a598816eb172d18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1142923763
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1142923759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2be4dfe9a853aad4b80a36e1a1c68c9e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _corridorPrefab: {fileID: 3529275797959998916, guid: 6ac0965b207b1ea43a30f2b03d68932d, type: 3}
+  _ladderPrefab: {fileID: 3529275797959998916, guid: 074e04fb34d19db47982c0d95fc58c87, type: 3}
+  _intersectionPrefab: {fileID: 3529275797959998916, guid: 8cb0bd1dcd654ff4aab48cb9fe212c3a, type: 3}
+  _firstInterPrefab: {fileID: 3529275797959998916, guid: 72ded0c7e47bd2247885ef7092caf432, type: 3}
 --- !u!1 &1239618860
 GameObject:
   m_ObjectHideFlags: 0
