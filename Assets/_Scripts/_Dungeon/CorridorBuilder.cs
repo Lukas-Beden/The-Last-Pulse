@@ -25,7 +25,11 @@ public class CorridorBuilder : MonoBehaviour
         _graph = gameObject.GetComponent<DungeonGraph>();
     }
 
-    
+    public void ClearCorridor()
+    {
+        _usedPos.Clear();
+        _goPerPos.Clear();
+    }
 
     public void AddNode(DungeonGraphNode node)
     {
@@ -174,13 +178,13 @@ public class CorridorBuilder : MonoBehaviour
                     _usedPos[new Vector3Int(startPos.x, k, startPos.z)] = CaseType.Intersection;
                     Destroy(_goPerPos[new Vector3Int(startPos.x, k, startPos.z)]);
                     _goPerPos.Remove(new Vector3Int(startPos.x, k, startPos.z));
-                    Instantiate(_intersectionPrefab, new Vector3(startPos.x, k, startPos.z), Quaternion.identity, transform);
+                    Instantiate(_firstInterPrefab, new Vector3(startPos.x, k, startPos.z), Quaternion.identity, transform);
                 } else if (_usedPos.ContainsKey(new Vector3Int(startPos.x, k, startPos.z)))
                 {
                     _usedPos[new Vector3Int(startPos.x, k, startPos.z)] = CaseType.FirstInter;
                     Destroy(_goPerPos[new Vector3Int(startPos.x, k, startPos.z)]);
                     _goPerPos.Remove(new Vector3Int(startPos.x, k, startPos.z));
-                    Instantiate(_firstInterPrefab, new Vector3(startPos.x, k, startPos.z), Quaternion.identity, transform);
+                    Instantiate(_intersectionPrefab, new Vector3(startPos.x, k, startPos.z), Quaternion.identity, transform);
                 } else
                 {
                     _usedPos[new Vector3Int(startPos.x, k, startPos.z)] = CaseType.Ladder;
@@ -191,13 +195,13 @@ public class CorridorBuilder : MonoBehaviour
                     _usedPos[new Vector3Int(endPos.x, k, endPos.z)] = CaseType.Intersection;
                     Destroy(_goPerPos[new Vector3Int(endPos.x, k, endPos.z)]);
                     _goPerPos.Remove(new Vector3Int(endPos.x, k, endPos.z));
-                    Instantiate(_intersectionPrefab, new Vector3(endPos.x, k, endPos.z), Quaternion.identity, transform);
+                    Instantiate(_firstInterPrefab, new Vector3(endPos.x, k, endPos.z), Quaternion.identity, transform);
                 } else if (_usedPos.ContainsKey(new Vector3Int(endPos.x, k, endPos.z)))
                 {
                     _usedPos[new Vector3Int(endPos.x, k, endPos.z)] = CaseType.FirstInter;
                     Destroy(_goPerPos[new Vector3Int(endPos.x, k, endPos.z)]);
                     _goPerPos.Remove(new Vector3Int(endPos.x, k, endPos.z));
-                    Instantiate(_firstInterPrefab, new Vector3(endPos.x, k, endPos.z), Quaternion.identity, transform);
+                    Instantiate(_intersectionPrefab, new Vector3(endPos.x, k, endPos.z), Quaternion.identity, transform);
                 } else
                 {
                     _usedPos[new Vector3Int(endPos.x, k, endPos.z)] = CaseType.Ladder;

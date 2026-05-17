@@ -30,7 +30,7 @@ public class DungeonInstantiator : MonoBehaviour
     {
         doorsManager.SetOpen(direction);
     }
-
+    
     public void SetupInstantation()
     {
         _actualDungeonTemplate = _graph.ActualDungeonTemplate;
@@ -41,6 +41,8 @@ public class DungeonInstantiator : MonoBehaviour
         do
         {
             ClearAllNodes();
+            ClearTransform();
+            _corridorBuilder.ClearCorridor();
             _nodeGrid = new DungeonGraphNode[_nodeCount, _nodeCount];
             isFinished = CreateGrid(_graphNodes[0]);
             iteration += 1;
@@ -52,6 +54,14 @@ public class DungeonInstantiator : MonoBehaviour
         }
         LESCOULOIRS();
         //_corridorBuilder.DebugUsedPos();
+    }
+
+    private void ClearTransform()
+    {
+        foreach (Transform child in transform)
+        {
+            Destroy(child.gameObject);
+        }
     }
 
     private void LESCOULOIRS() //verif ne fonctionne pas V1

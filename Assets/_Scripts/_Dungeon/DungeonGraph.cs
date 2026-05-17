@@ -36,7 +36,7 @@ public class DungeonGraph : MonoBehaviour
         Debug.Log("Template count: " + _dungeonTemplate.Count);
         _actualDungeonTemplate = _dungeonTemplate[_floor / 10];
         GraphCreationLoop();
-        _dungeonInstantiator.SetupInstantation();
+        
     }
 
     private void ChangeFloor()
@@ -61,8 +61,6 @@ public class DungeonGraph : MonoBehaviour
         _possibleRoomType.Remove(RoomType.End);
         do
         {
-            DebugGraph();
-            Debug.Log("\n\n\n\n\n.............................\n\n\n\n\n");
             _nodes.Clear();
             _dfsVisitedNode.Clear();
             _roomByType.Clear();
@@ -77,6 +75,7 @@ public class DungeonGraph : MonoBehaviour
             //DebugDistance();
 
         } while (!DFS(_startNode, _dfsVisitedNode));
+        _dungeonInstantiator.SetupInstantation();
         DebugGraph();
     }
 
