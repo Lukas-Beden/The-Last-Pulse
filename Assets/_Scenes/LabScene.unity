@@ -404,6 +404,8 @@ MonoBehaviour:
   _ladderPrefab: {fileID: 3529275797959998916, guid: 074e04fb34d19db47982c0d95fc58c87, type: 3}
   _intersectionPrefab: {fileID: 3529275797959998916, guid: 8cb0bd1dcd654ff4aab48cb9fe212c3a, type: 3}
   _firstInterPrefab: {fileID: 3529275797959998916, guid: 72ded0c7e47bd2247885ef7092caf432, type: 3}
+  _intersectionLvl0Prefab: {fileID: 3529275797959998916, guid: 684c097f151b7b340bec7823f5701881, type: 3}
+  _cornerPrefab: {fileID: 3529275797959998916, guid: 53ffd3477a5bbe44489f04c9a9d3b58d, type: 3}
 --- !u!1 &1239618860
 GameObject:
   m_ObjectHideFlags: 0
@@ -697,7 +699,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -185.1, y: 176}
+  m_AnchoredPosition: {x: -139, y: 118}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1729542667

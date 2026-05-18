@@ -6,5 +6,7 @@ public enum CaseType
     TechnicalBridge,
     Underground,
     Intersection,
-    FirstInter
+    FirstInter,
+    IntersectionLvl0,
+    Corner
 }

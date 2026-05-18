@@ -1,7 +1,9 @@
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
+using UnityEditor.Rendering;
 using UnityEngine;
 
 public class CorridorBuilder : MonoBehaviour
@@ -15,6 +17,8 @@ public class CorridorBuilder : MonoBehaviour
     [SerializeField] private GameObject _ladderPrefab;
     [SerializeField] private GameObject _intersectionPrefab;
     [SerializeField] private GameObject _firstInterPrefab;
+    [SerializeField] private GameObject _intersectionLvl0Prefab;
+    [SerializeField] private GameObject _cornerPrefab;
 
 
 
@@ -85,6 +89,9 @@ public class CorridorBuilder : MonoBehaviour
         if (startPos.x > endPos.x) { signX = -1; }
         if (startPos.z > endPos.z) { signZ = -1; }
 
+        int relativePosX = Mathf.Abs(endPos.x - startPos.x);
+        int relativePosZ = Mathf.Abs(endPos.z - startPos.z);
+
         bool CheckPath(bool verticalFirst)
         {
             int i = startPos.x;
@@ -92,6 +99,11 @@ public class CorridorBuilder : MonoBehaviour
 
             if (verticalFirst)
             {
+                
+                if (relativePosZ < 10 && startPos.x == endPos.x)
+                {
+                    return true;
+                }
                 for (; j != endPos.z; j += signZ)
                 {
                     if (_usedPos.ContainsKey(new Vector3Int(i, yLevel * 5, j)))
@@ -110,6 +122,10 @@ public class CorridorBuilder : MonoBehaviour
             }
             else
             {
+                if (relativePosX < 10 && startPos.z == endPos.z)
+                {
+                    return true;
+                }
                 for (; i != endPos.x; i += signX)
                 {
                     if (_usedPos.ContainsKey(new Vector3Int(i, yLevel * 5, j)))
@@ -139,32 +155,48 @@ public class CorridorBuilder : MonoBehaviour
             {
                 for (; j != endPos.z; j += signZ)
                 {
-                        _usedPos[new Vector3Int(i, yLevel * 5, j)] = CaseType.Corridor;
-                        GameObject corridorGO = Instantiate(_corridorPrefab, new Vector3(i, yLevel * 5, j), Quaternion.identity, transform);
-                        _goPerPos[new Vector3Int(i, yLevel * 5, j)] = corridorGO;
+                    _usedPos[new Vector3Int(i, yLevel * 5, j)] = CaseType.Corridor;
+                    GameObject corridorGO = Instantiate(_corridorPrefab, new Vector3(i, yLevel * 5, j), Quaternion.identity, transform);
+                    _goPerPos[new Vector3Int(i, yLevel * 5, j)] = corridorGO;
                 }
 
                 for (; i != endPos.x; i += signX)
                 {
+                    if (i == startPos.x && j == endPos.z && startPos.x != endPos.x) // pour les corners mais fait aussi les bouts de couloirs droits
+                    {
+                        _usedPos[new Vector3Int(i, yLevel * 5, j)] = CaseType.Corner;
+                        GameObject corridorGO = Instantiate(_cornerPrefab, new Vector3(i, yLevel * 5, j), Quaternion.identity, transform);
+                        _goPerPos[new Vector3Int(i, yLevel * 5, j)] = corridorGO;
+                    } else
+                    {
                         _usedPos[new Vector3Int(i, yLevel * 5, j)] = CaseType.Corridor;
                         GameObject corridorGO = Instantiate(_corridorPrefab, new Vector3(i, yLevel * 5, j), Quaternion.identity, transform);
                         _goPerPos[new Vector3Int(i, yLevel * 5, j)] = corridorGO;
+                    }
                 }
             }
             else
             {
                 for (; i != endPos.x; i += signX)
                 {
-                        _usedPos[new Vector3Int(i, yLevel * 5, j)] = CaseType.Corridor;
-                        GameObject corridorGO = Instantiate(_corridorPrefab, new Vector3(i, yLevel * 5, j), Quaternion.identity, transform);
-                        _goPerPos[new Vector3Int(i, yLevel * 5, j)] = corridorGO;
+                    _usedPos[new Vector3Int(i, yLevel * 5, j)] = CaseType.Corridor;
+                    GameObject corridorGO = Instantiate(_corridorPrefab, new Vector3(i, yLevel * 5, j), Quaternion.identity, transform);
+                    _goPerPos[new Vector3Int(i, yLevel * 5, j)] = corridorGO;
                 }
 
                 for (; j != endPos.z; j += signZ)
                 {
+                    if (j == startPos.z && i == endPos.x && startPos.z != endPos.z) // pour les corners mais fait aussi les bouts de couloirs droits
+                    {
+                        _usedPos[new Vector3Int(i, yLevel * 5, j)] = CaseType.Corner;
+                        GameObject corridorGO = Instantiate(_cornerPrefab, new Vector3(i, yLevel * 5, j), Quaternion.identity, transform);
+                        _goPerPos[new Vector3Int(i, yLevel * 5, j)] = corridorGO;
+                    } else
+                    {
                         _usedPos[new Vector3Int(i, yLevel * 5, j)] = CaseType.Corridor;
                         GameObject corridorGO = Instantiate(_corridorPrefab, new Vector3(i, yLevel * 5, j), Quaternion.identity, transform);
                         _goPerPos[new Vector3Int(i, yLevel * 5, j)] = corridorGO;
+                    }
                 }
             }
             _usedPos[new Vector3Int(endPos.x, yLevel * 5, endPos.z)] = CaseType.Corridor;
