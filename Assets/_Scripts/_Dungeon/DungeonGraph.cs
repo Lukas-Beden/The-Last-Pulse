@@ -55,6 +55,12 @@ public class DungeonGraph : MonoBehaviour
 
     public void GraphCreationLoop()
     {
+        if (!_actualDungeonTemplate.IsRandomSeed)
+        {
+            
+        }
+
+
         List<DungeonGraphNode> _dfsVisitedNode = new();
         _possibleRoomType = _actualDungeonTemplate.GetAllType();
         _possibleRoomType.Remove(RoomType.Start);

@@ -162,7 +162,7 @@ public class CorridorBuilder : MonoBehaviour
 
                 for (; i != endPos.x; i += signX)
                 {
-                    if (i == startPos.x && j == endPos.z && startPos.x != endPos.x) // pour les corners mais fait aussi les bouts de couloirs droits
+                    if (i == startPos.x && j == endPos.z && startPos.x != endPos.x && startPos.z != endPos.z) // pour les corners mais fait aussi les bouts de couloirs droits
                     {
                         _usedPos[new Vector3Int(i, yLevel * 5, j)] = CaseType.Corner;
                         GameObject corridorGO = Instantiate(_cornerPrefab, new Vector3(i, yLevel * 5, j), Quaternion.identity, transform);
@@ -186,7 +186,7 @@ public class CorridorBuilder : MonoBehaviour
 
                 for (; j != endPos.z; j += signZ)
                 {
-                    if (j == startPos.z && i == endPos.x && startPos.z != endPos.z) // pour les corners mais fait aussi les bouts de couloirs droits
+                    if (j == startPos.z && i == endPos.x && startPos.z != endPos.z && startPos.x != endPos.x) // pour les corners mais fait aussi les bouts de couloirs droits
                     {
                         _usedPos[new Vector3Int(i, yLevel * 5, j)] = CaseType.Corner;
                         GameObject corridorGO = Instantiate(_cornerPrefab, new Vector3(i, yLevel * 5, j), Quaternion.identity, transform);
