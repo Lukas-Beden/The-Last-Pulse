@@ -8,8 +8,8 @@ public class DungeonGraph : MonoBehaviour
     private SODungeon _actualDungeonTemplate;
     private int _floor = 0; // dans le gameManager ???
     private List<DungeonGraphNode> _nodes = new();
-    private int _minOfEachRoomType = 3;
-    private int _maxOfEachRoomType = 4;
+    [SerializeField] private int _minOfEachRoomType = 3;
+    [SerializeField] private int _maxOfEachRoomType = 4;
     private List<RoomType> _possibleRoomType = new();
     [SerializeField] private SerializableDictionary<RoomType, List<RoomType>> _roomConstraints = new();
     [SerializeField] private SerializableDictionary<RoomType, Vector2> _maxLinkByRoomType = new();

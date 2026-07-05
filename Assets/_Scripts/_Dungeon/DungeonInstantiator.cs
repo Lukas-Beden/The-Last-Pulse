@@ -37,7 +37,6 @@ public class DungeonInstantiator : MonoBehaviour
         _graphNodes = _graph.Nodes;
         _nodeCount = _graphNodes.Count;
         bool isFinished = false;
-        int iteration = 0;
         do
         {
             ClearAllNodes();
@@ -45,8 +44,7 @@ public class DungeonInstantiator : MonoBehaviour
             _corridorBuilder.ClearCorridor();
             _nodeGrid = new DungeonGraphNode[_nodeCount, _nodeCount];
             isFinished = CreateGrid(_graphNodes[0]);
-            iteration += 1;
-        } while (!isFinished && iteration < 50);
+        } while (!isFinished);
         InstantiateRoom();
         foreach (DungeonGraphNode node in _graphNodes)
         {
